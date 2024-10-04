@@ -66,7 +66,7 @@ correlation_matrix
 ## 6) Construct a time series of the simple, non-cumulative returns of a portfolio where capital is allocated equally 
 ## across the first four industries (excluding Other). Report the arithmetic mean, standard deviation and Sharpe.
 ## Comment briefly on the gains achieved by this diversified portfolio.
-
+### whole sample portfolio returns
 # Escludiamo la colonna "Date" e "Other", prendendo solo le prime quattro industrie
 portfolio_data <- data[, c("Cnsmr", "Manuf", "HiTec", "Hlth")]
 # Calcolare i rendimenti giornalieri del portafoglio con allocazione equa
@@ -89,9 +89,36 @@ results_table2 <- data.frame(
 )
 results_table2
 
+### yearly portfolio returns
+data$Portfolio_return <- rowMeans(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth")])
+yearly_portfolio_means <- aggregate(Portfolio_return ~ Year, data, mean)
+yearly_portfolio_std <- aggregate(Portfolio_return ~ Year, data, sd)
+yearly_sharpe_ratios <- yearly_portfolio_means$Portfolio_return / yearly_portfolio_std$Portfolio_return
 
+yearly_results <- data.frame(
+  Year = yearly_portfolio_means$Year,
+  Mean_Return = yearly_portfolio_means$Portfolio_return,
+  Std_Dev = yearly_portfolio_std$Portfolio_return,
+  Sharpe_Ratio = yearly_sharpe_ratios
+)
+yearly_results
 
-
+### Plot the time series of portfolio performance
+plot(yearly_results$Year, yearly_results$Mean_Return, 
+     type = 'l', 
+     xlab = "Year", 
+     ylab = "Values", 
+     col  = "blue", 
+     ylim = range(c(yearly_results$Mean_Return, yearly_results$Std_Dev, yearly_results$Sharpe_Ratio)),  # Adjust the y-axis limits to accommodate all data
+     main = "Time Series of Portfolio Performance")
+lines(yearly_results$Year, yearly_results$Std_Dev, 
+      col = "red")
+lines(yearly_results$Year, yearly_results$Sharpe_Ratio, 
+      col = "green")
+legend("topright", 
+       legend = c("Mean Return", "Std Dev", "Sharpe Ratio"), 
+       col = c("blue", "red", "green"), 
+       lty = 1)
 
 
 
