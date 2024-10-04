@@ -120,6 +120,13 @@ legend("topright",
        col = c("blue", "red", "green"), 
        lty = 1)
 
+### Plot returns in the portfolio
+plot(data$Year, data$Portfolio_return, 
+     type = 'l', 
+     xlab = "Year", 
+     ylab = "Portfolio Return", 
+     col  = "blue", 
+     main = "Time Series of Portfolio Returns")
 
 
 
