@@ -6,25 +6,34 @@ head(data)
 sum(is.na(data))
 summary(data)
 anyDuplicated(data)
+data$Year <- substr(data$Date, 1, 4)
 
 ## 1) Report the arithmetic mean of the returns for each of the five industries over the entire sample
-mean_returns <- colMeans(data[, -1])  
-mean_returns
+yearly_means <- aggregate(cbind(Cnsmr, Manuf, HiTec, Hlth, Other) ~ Year, data, mean)
+yearly_means ## yearly means
+mean_returns <- colMeans(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")]) ## whole sample mean returns
+mean_returns ## mean returns
 
 ## 2) Report the standard deviation of the returns for each of the five industries over the entire sample
-std_returns <- apply(data[, -1], 2, sd)
+std_returns <- apply(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")], 2, sd) ## whole sample standard deviation of returns
 std_returns
+yearly_std <- aggregate(cbind(Cnsmr, Manuf, HiTec, Hlth, Other) ~ Year, data, sd)
+yearly_std
 
 ## 3) Report the Sharpe ratio of each industry
-sharpe_ratio <- mean_returns/std_returns
+sharpe_ratio <- mean_returns/std_returns ## whole sample Sharpe ratio
 sharpe_ratio
+yearly_sharpe_ratios <- (yearly_means[, -1]) / yearly_std[, -1] ## yearly Sharpe ratios
+yearly_sharpe_ratios <- cbind(Year = yearly_means$Year, yearly_sharpe_ratios)
+yearly_sharpe_ratios
 
-results_table <- data.frame(
+### Create a table of results in the whole sample
+results_table1 <- data.frame(
   Mean_Returns = mean_returns,
   Std_Returns = std_returns,
   Sharpe_Ratio = sharpe_ratio
  )
-results_table
+results_table1
 
 ## 4) Is there evidence that technology stocks have better risk-adjusted returns?
 ### The Sharpe ratio of HiTec (0.1794) is not the highest; Health (0.1947) and Consumer (0.1919) have slightly better risk-adjusted returns.
@@ -32,8 +41,9 @@ results_table
 ### Health and Consumer stocks show better performance in terms of risk-adjusted returns in this sample.
 
 ## 5) Provide a table (5×5) with the sample correlation between the returns of the five industries. Comment briefly.
-correlation_matrix <- cor(data[, -1])
+correlation_matrix <- cor(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")])
 correlation_matrix
+
 ### The correlation matrix shows how returns from one industry are related to returns from another:
 ### High Correlations: Many pairs of industries show strong positive correlations (close to 1). For example:
 #### Consumer (Cnsmer) and Manufacturing (Manuf): 0.867; Manufacturing and Other: 0.892 --> These high correlations suggest that 
@@ -53,6 +63,31 @@ correlation_matrix
 #### to offer slightly better diversification, with lower correlations with other industries, such as with Technology (0.707) and 
 #### Manufacturing (0.743), but overall the correlations are still fairly high.
 
+## 6) Construct a time series of the simple, non-cumulative returns of a portfolio where capital is allocated equally 
+## across the first four industries (excluding Other). Report the arithmetic mean, standard deviation and Sharpe.
+## Comment briefly on the gains achieved by this diversified portfolio.
+
+# Escludiamo la colonna "Date" e "Other", prendendo solo le prime quattro industrie
+portfolio_data <- data[, c("Cnsmr", "Manuf", "HiTec", "Hlth")]
+# Calcolare i rendimenti giornalieri del portafoglio con allocazione equa
+portfolio_returns <- rowMeans(portfolio_data)
+portfolio_returns
+# Calcolare la media aritmetica dei rendimenti del portafoglio
+mean_portfolio_return <- mean(portfolio_returns)
+mean_portfolio_return
+# Calcolare la deviazione standard dei rendimenti del portafoglio
+std_portfolio_return <- sd(portfolio_returns)
+std_portfolio_return
+# Calcolare il rapporto di Sharpe (senza tasso privo di rischio)
+sharpe_portfolio <- mean_portfolio_return / std_portfolio_return
+sharpe_portfolio
+# Creare una tabella dei risultati
+results_table2 <- data.frame(
+  Mean_Return = mean_portfolio_return,
+  Std_Dev = std_portfolio_return,
+  Sharpe_Ratio = sharpe_portfolio
+)
+results_table2
 
 
 
