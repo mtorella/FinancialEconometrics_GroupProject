@@ -71,7 +71,7 @@ correlation_matrix <- round(correlation_matrix, 4)
 correlation_matrix
 ```
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 library(knitr)
 kable(correlation_matrix, caption = "Correlation Matrix of Industry Returns", format = "html")
 library(corrplot)
@@ -83,7 +83,7 @@ The correlation matrix indicates that all five industries have positive correlat
 
 ### 6. Construct a time series of the simple, non-cumulative returns of a portfolio where capital is allocated equally across the first four industries (excluding Other). Report the arithmetic mean, standard deviation and Sharpe. Comment briefly on the gains achieved by this diversified portfolio.
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Calculate portfolio returns as the average of the first four industries (excluding 'Other')
 portfolio_returns <- rowMeans(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth")]) 
 mean_portfolio <- mean(portfolio_returns)
@@ -102,7 +102,7 @@ print(portfolio_results)
 
 The diversified portfolio, which allocates capital equally across the first four industries, achieves an annualized mean return of 12.14% and an annualized standard deviation of 17.34%, resulting in a Sharpe ratio of 0.7004. This Sharpe ratio indicates that the portfolio offers better risk-adjusted returns than some individual industries, such as Manufacturing (0.6045) and Other (0.4994). It also slightly outperforms Technology (0.6216), suggesting that diversification has improved the portfolio’s performance relative to risk. However, the gains from diversification are not substantial, as the portfolio’s Sharpe ratio is only marginally higher than that of Health (0.6746) and Consumer (0.6646). Overall, diversification provides some benefit, but the improvement in risk-adjusted returns is moderate.
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 library(ggplot2)
 data$Date <- as.character(data$Date)
 data$Date <- paste0(data$Date, "01")
@@ -124,7 +124,7 @@ In this task you will treat the portfolio you computed in Task 1, point (6), as 
 
 ### 1. Compute the kurtosis and skeweness of Rm
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 n <- length(portfolio_returns)
 
 skewness_value <- (n / ((n - 1) * (n - 2))) * sum(((portfolio_returns - mean_portfolio) / sd_portfolio)^3, na.rm = TRUE)
