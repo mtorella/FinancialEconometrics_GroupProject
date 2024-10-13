@@ -12,6 +12,102 @@ Group members:
 -   Pinna Paola
 -   Torella Marta 
 
+## EDA {.tabset .tabset-fade}
+
+```{r}
+data <- read.csv("FIN 36182-Industry_Portfolios.CSV")
+head(data)
+sum(is.na(data))
+anyDuplicated(data)
+
+data[, 2:6] <- data[, 2:6] / 100 ## Convert returns to decimal form as asked
+head(data)
+```
 ## Task 1 {.tabset .tabset-fade}
 
+### 1. Report the arithmetic mean of the returns for each of the five industries over the entire sample
 
+```{r}
+monthly_means <- colMeans(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")]) 
+annualized_means <- monthly_means * 12
+annualized_means <- round(annualized_means, 4)
+annualized_means
+```
+
+### 2. Report the standard deviation of the returns for each of the five industries over the entire sample
+
+```{r}
+monthly_std <- apply(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")], 2, sd)
+annualized_std <- monthly_std * sqrt(12)
+annualized_std <- round(annualized_std, 4)
+annualized_std
+```
+
+### 3. Report the Sharpe ratio of each industry
+
+```{r}
+sharpe_ratios <- annualized_means / annualized_std
+sharpe_ratios <- round(sharpe_ratios, 4)
+sharpe_ratios
+```
+
+```{r}
+results_table1 <- data.frame(
+  Mean_Returns = annualized_means,
+  Std_Returns = annualized_std,
+  Sharpe_Ratio = sharpe_ratios
+ )
+results_table1
+```
+
+### 4. Is there evidence that technology stocks have better risk-adjusted returns?
+Based on the results, technology stocks (HiTec) have a Sharpe ratio of 0.6216, indicating better risk-adjusted returns compared to the manufacturing (0.6045) and other sectors (0.4994). However, they do not outperform the consumer (0.6646) and health industries (0.6746), which exhibit higher Sharpe ratios. Therefore, while technology stocks offer relatively good risk-adjusted returns, they are not the best performers overall, as both the consumer and health sectors deliver better risk-adjusted outcomes.
+
+### 5. Provide a table (5×5) with the sample correlation between the returns of the five industries. Comment briefly.
+
+```{r}
+correlation_matrix <- cor(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")])
+correlation_matrix <- round(correlation_matrix, 4)
+correlation_matrix
+```
+The correlation matrix indicates that all five industries have positive correlations with each other, suggesting that their returns tend to move in the same direction. The strongest correlations are between Manufacturing and Other (0.8924) and between Manufacturing and Consumer (0.8670), indicating that these industries have highly synchronized return movements. On the other hand, the weakest correlations are between Technology and Health (0.7072), and between these two industries and the others, implying that Technology and Health exhibit slightly more independent return patterns. While the positive correlations across all industries suggest some degree of co-movement, the relatively lower correlations for Technology and Health indicate potential diversification benefits, though the absence of negative correlations limits the extent of diversification.
+
+### 6. Construct a time series of the simple, non-cumulative returns of a portfolio where capital is allocated equally across the first four industries (excluding Other). Report the arithmetic mean, standard deviation and Sharpe. Comment briefly on the gains achieved by this diversified portfolio.
+
+```{r}
+# Calculate portfolio returns as the average of the first four industries (excluding 'Other')
+portfolio_returns <- rowMeans(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth")]) 
+mean_portfolio <- mean(portfolio_returns)
+sd_portfolio <- sd(portfolio_returns)
+
+annualized_mean_portfolio <- mean_portfolio * 12
+annualized_sd_portfolio <- sd_portfolio * sqrt(12)
+sharpe_ratio_portfolio <- annualized_mean_portfolio / annualized_sd_portfolio
+
+portfolio_results <- data.frame(
+  Metric = c("Annualized Mean Return", "Annualized Standard Deviation", "Sharpe Ratio"),
+  Value = round(c(annualized_mean_portfolio, annualized_sd_portfolio, sharpe_ratio_portfolio), 4)
+)
+print(portfolio_results)
+```
+
+The diversified portfolio, which allocates capital equally across the first four industries, achieves an annualized mean return of 12.14% and an annualized standard deviation of 17.34%, resulting in a Sharpe ratio of 0.7004. This Sharpe ratio indicates that the portfolio offers better risk-adjusted returns than some individual industries, such as Manufacturing (0.6045) and Other (0.4994). It also slightly outperforms Technology (0.6216), suggesting that diversification has improved the portfolio’s performance relative to risk. However, the gains from diversification are not substantial, as the portfolio’s Sharpe ratio is only marginally higher than that of Health (0.6746) and Consumer (0.6646). Overall, diversification provides some benefit, but the improvement in risk-adjusted returns is moderate.
+
+```{r}
+library(ggplot2)
+data$Date <- as.character(data$Date)
+data$Date <- paste0(data$Date, "01")
+data$Date <- as.Date(data$Date, format = "%Y%m%d")
+
+plot_data <- data.frame(Date = data$Date, Portfolio_Returns = portfolio_returns)
+ggplot(plot_data, aes(x = Date, y = Portfolio_Returns)) +
+  geom_line(color = "blue") +
+  labs(title = "Portfolio Returns Over Time",
+       x = "Date",
+       y = "Portfolio Returns") +
+  theme_minimal()
+```
+
+The portfolio returns exhibit significant volatility, especially in the earlier periods before the 1950s, with large spikes in both positive and negative directions. This high volatility is particularly evident around historical market crashes, such as the Great Depression in the 1930s and the 2008 financial crisis. After World War II, the portfolio returns become more stable, with fewer extreme fluctuations, though volatility remains, particularly during financial crises. In the last two decades, there has been a noticeable increase in volatility, likely reflecting events like the dot-com bubble, the 2008 crisis, and the COVID-19 market disruptions. Overall, while the portfolio appears more stable post-1950, significant market events continue to cause sharp fluctuations.
+
+## Task 2 {.tabset .tabset-fade}

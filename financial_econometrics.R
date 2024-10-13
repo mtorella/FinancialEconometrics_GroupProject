@@ -6,6 +6,7 @@ head(data)
 sum(is.na(data))
 summary(data)
 anyDuplicated(data)
+data[, 2:6] <- data[, 2:6] / 100 ## Convert returns to decimal form as asked
 data$Year <- substr(data$Date, 1, 4)
 
 ## 1) Report the arithmetic mean of the returns for each of the five industries over the entire sample
