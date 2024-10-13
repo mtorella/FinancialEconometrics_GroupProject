@@ -141,8 +141,25 @@ portfolio_results2 <- data.frame(
 print(portfolio_results2)
 ```
 
+```{r, warning=FALSE, message=FALSE}
+library(ggplot2)
+ggplot(data = data.frame(returns = portfolio_returns), aes(x = returns)) +
+  geom_histogram(aes(y = ..density..), bins = 30, fill = "blue", color = "black", alpha = 0.7) +
+  geom_density(color = "red", size = 1) +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(portfolio_returns, na.rm = TRUE), 
+                            sd = sd(portfolio_returns, na.rm = TRUE)),
+                color = "green", linetype = "dashed", size = 1) +
+  labs(title = "Distribution of Portfolio Returns with Normal Distribution Overlay",
+       x = "Portfolio Returns",
+       y = "Density") +
+  theme_minimal()
+```
+
+
 ### 2. How do the values in (1) compare with the normal distribution?
+The portfolio returns exhibit a kurtosis of 7.3218, which is significantly higher than the normal distribution’s kurtosis of 3, indicating the presence of fat tails. This suggests that the portfolio is more likely to experience extreme returns, both positive and negative, compared to a normal distribution. In contrast, the skewness of 0.0237 is very close to zero, implying that the distribution of returns is symmetric, with no significant bias toward either side. Overall, while the portfolio returns are prone to extreme fluctuations, these events are equally likely to be positive or negative, reflecting a balance in the distribution’s shape.
 
+Moreover, the above plot shows the distribution of portfolio returns (blue histogram with red density curve) overlaid with a normal distribution (green dashed line). The portfolio returns exhibit fatter tails compared to the normal distribution, particularly on the left side, which is consistent with the high kurtosis observed earlier, indicating a higher probability of extreme returns. The distribution is also roughly symmetric, aligning with the nearly zero skewness, showing no significant bias toward either positive or negative returns. Additionally, the portfolio’s return distribution has a slightly higher peak than the normal curve, suggesting a greater concentration of returns near the mean. Overall, the portfolio returns deviate from the normal distribution, with a greater chance of extreme events and a higher central concentration of values.
 
-
-
+### 3. Repeat point (1), but eliminating the first 70 years of data (i.e. from 199706).
