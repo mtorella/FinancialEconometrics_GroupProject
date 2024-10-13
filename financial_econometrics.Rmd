@@ -70,6 +70,15 @@ correlation_matrix <- cor(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")])
 correlation_matrix <- round(correlation_matrix, 4)
 correlation_matrix
 ```
+
+```{r}
+library(knitr)
+kable(correlation_matrix, caption = "Correlation Matrix of Industry Returns", format = "html")
+library(corrplot)
+corrplot(correlation_matrix, method = "color", type = "upper", 
+         tl.col = "black", tl.srt = 45)
+
+```
 The correlation matrix indicates that all five industries have positive correlations with each other, suggesting that their returns tend to move in the same direction. The strongest correlations are between Manufacturing and Other (0.8924) and between Manufacturing and Consumer (0.8670), indicating that these industries have highly synchronized return movements. On the other hand, the weakest correlations are between Technology and Health (0.7072), and between these two industries and the others, implying that Technology and Health exhibit slightly more independent return patterns. While the positive correlations across all industries suggest some degree of co-movement, the relatively lower correlations for Technology and Health indicate potential diversification benefits, though the absence of negative correlations limits the extent of diversification.
 
 ### 6. Construct a time series of the simple, non-cumulative returns of a portfolio where capital is allocated equally across the first four industries (excluding Other). Report the arithmetic mean, standard deviation and Sharpe. Comment briefly on the gains achieved by this diversified portfolio.
@@ -111,3 +120,29 @@ ggplot(plot_data, aes(x = Date, y = Portfolio_Returns)) +
 The portfolio returns exhibit significant volatility, especially in the earlier periods before the 1950s, with large spikes in both positive and negative directions. This high volatility is particularly evident around historical market crashes, such as the Great Depression in the 1930s and the 2008 financial crisis. After World War II, the portfolio returns become more stable, with fewer extreme fluctuations, though volatility remains, particularly during financial crises. In the last two decades, there has been a noticeable increase in volatility, likely reflecting events like the dot-com bubble, the 2008 crisis, and the COVID-19 market disruptions. Overall, while the portfolio appears more stable post-1950, significant market events continue to cause sharp fluctuations.
 
 ## Task 2 {.tabset .tabset-fade}
+In this task you will treat the portfolio you computed in Task 1, point (6), as the market portfolio, denote its returns as Rm, and will estimate and interpret beta and alpha coefficients in the context of the CAPM.
+
+### 1. Compute the kurtosis and skeweness of Rm
+
+```{r}
+n <- length(portfolio_returns)
+
+skewness_value <- (n / ((n - 1) * (n - 2))) * sum(((portfolio_returns - mean_portfolio) / sd_portfolio)^3, na.rm = TRUE)
+kurtosis_value <- (n * (n + 1) / ((n - 1) * (n - 2) * (n - 3))) * 
+                  sum(((portfolio_returns - mean_portfolio) / sd_portfolio)^4) - 
+                  (3 * (n - 1)^2 / ((n - 2) * (n - 3)))
+kurtosis_value <- round(kurtosis_value, 4)
+skewness_value <- round(skewness_value, 4)
+
+portfolio_results2 <- data.frame(
+  Metric = c("Kurtosis", "Skewness"),
+  Value = c(kurtosis_value, skewness_value)
+)
+print(portfolio_results2)
+```
+
+### 2. How do the values in (1) compare with the normal distribution?
+
+
+
+
