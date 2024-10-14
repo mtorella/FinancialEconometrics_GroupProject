@@ -302,3 +302,6 @@ print(jensens_alpha)
 The Jensen’s alpha results, reported in percentage terms, show varying performance across the four industries. Consumer stocks have an alpha of 0.0051%, indicating performance roughly in line with expectations under the CAPM model. Manufacturing stocks, on the other hand, have a negative alpha of -0.9107%, meaning they significantly underperformed relative to what the CAPM would predict. Similarly, Technology stocks exhibit a negative alpha of -0.1149%, suggesting a slight underperformance. In contrast, Health stocks stand out with a positive alpha of 1.0209%, indicating that this sector outperformed its expected return by over 1%, given its risk and the market conditions. Overall, the Health sector performed well above expectations, while Manufacturing and Technology stocks underperformed.
 
 ## Task 3 {.tabset .tabset-fade}
+Use the lm( ) function to run a few regressions:
+
+### 1. Regress Rm(t) on an intercept and on Rm(t−1). Report estimates and t-statistics. Briefly interpret the results
