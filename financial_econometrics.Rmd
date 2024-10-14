@@ -84,8 +84,8 @@ The correlation matrix indicates that all five industries have positive correlat
 ### 6. Construct a time series of the simple, non-cumulative returns of a portfolio where capital is allocated equally across the first four industries (excluding Other). Report the arithmetic mean, standard deviation and Sharpe. Comment briefly on the gains achieved by this diversified portfolio.
 
 ```{r, warning=FALSE, message=FALSE}
-# Calculate portfolio returns as the average of the first four industries (excluding 'Other')
 portfolio_returns <- rowMeans(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth")]) 
+data$Portfolio_Returns <- portfolio_returns
 mean_portfolio <- mean(portfolio_returns)
 sd_portfolio <- sd(portfolio_returns)
 
@@ -108,7 +108,7 @@ data$Date <- as.character(data$Date)
 data$Date <- paste0(data$Date, "01")
 data$Date <- as.Date(data$Date, format = "%Y%m%d")
 
-plot_data <- data.frame(Date = data$Date, Portfolio_Returns = portfolio_returns)
+plot_data <- data.frame(Date = data$Date, Portfolio_Returns = data$Portfolio_Returns)
 ggplot(plot_data, aes(x = Date, y = Portfolio_Returns)) +
   geom_line(color = "blue") +
   labs(title = "Portfolio Returns Over Time",
@@ -143,7 +143,7 @@ print(portfolio_results2)
 
 ```{r, warning=FALSE, message=FALSE}
 library(ggplot2)
-ggplot(data = data.frame(returns = portfolio_returns), aes(x = returns)) +
+ggplot(data = data.frame(returns = data$Portfolio_Returns), aes(x = returns)) +
   geom_histogram(aes(y = ..density..), bins = 30, fill = "blue", color = "black", alpha = 0.7) +
   geom_density(color = "red", size = 1) +
   stat_function(fun = dnorm, 
@@ -163,3 +163,142 @@ The portfolio returns exhibit a kurtosis of 7.3218, which is significantly highe
 Moreover, the above plot shows the distribution of portfolio returns (blue histogram with red density curve) overlaid with a normal distribution (green dashed line). The portfolio returns exhibit fatter tails compared to the normal distribution, particularly on the left side, which is consistent with the high kurtosis observed earlier, indicating a higher probability of extreme returns. The distribution is also roughly symmetric, aligning with the nearly zero skewness, showing no significant bias toward either positive or negative returns. Additionally, the portfolio’s return distribution has a slightly higher peak than the normal curve, suggesting a greater concentration of returns near the mean. Overall, the portfolio returns deviate from the normal distribution, with a greater chance of extreme events and a higher central concentration of values.
 
 ### 3. Repeat point (1), but eliminating the first 70 years of data (i.e. from 199706).
+
+```{r}
+data_filtered <- data[data$Date >= as.Date("1997-06-01"), ]
+portfolio_returns_filtered <- data_filtered$Portfolio_Returns
+
+n_filtered <- length(portfolio_returns_filtered)
+mean_filtered <- mean(portfolio_returns_filtered)
+sd_filtered <- sd(portfolio_returns_filtered)
+
+skewness_filtered <- (n_filtered / ((n_filtered - 1) * (n_filtered - 2))) * 
+                      sum(((portfolio_returns_filtered - mean_filtered) / sd_filtered)^3)
+kurtosis_filtered <- (n_filtered * (n_filtered + 1) / ((n_filtered - 1) * (n_filtered - 2) * (n_filtered - 3))) * 
+                      sum(((portfolio_returns_filtered - mean_filtered) / sd_filtered)^4) - 
+                      (3 * (n_filtered - 1)^2 / ((n_filtered - 2) * (n_filtered - 3)))
+
+skewness_filtered <- round(skewness_filtered, 4)
+kurtosis_filtered <- round(kurtosis_filtered, 4)
+
+portfolio_results3 <- data.frame(
+  Metric = c("Kurtosis", "Skewness"),
+  Value = c(kurtosis_filtered, skewness_filtered)
+)
+print(portfolio_results3)
+```
+
+```{r}
+ggplot(data = data.frame(returns = portfolio_returns_filtered), aes(x = returns)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, fill = "blue", color = "black", alpha = 0.7) +
+  geom_density(color = "red", linewidth = 1) +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(portfolio_returns_filtered, na.rm = TRUE), 
+                            sd = sd(portfolio_returns_filtered, na.rm = TRUE)),
+                color = "green", linetype = "dashed", linewidth = 1) +
+  labs(title = "Distribution of Filtered Portfolio Returns with Normal Distribution Overlay",
+       x = "Portfolio Returns",
+       y = "Density") +
+  theme_minimal()
+```
+
+### 4. Compute and report the covariance of the first four industries with Rm
+
+```{r}
+cov_Cnsmr_Rm <- cov(data$Cnsmr, data$Portfolio_Returns, use = "complete.obs")
+cov_Manuf_Rm <- cov(data$Manuf, data$Portfolio_Returns, use = "complete.obs")
+cov_HiTec_Rm <- cov(data$HiTec, data$Portfolio_Returns, use = "complete.obs")
+cov_Hlth_Rm <- cov(data$Hlth, data$Portfolio_Returns, use = "complete.obs")
+
+cov_Cnsmr_Rm <- round(cov_Cnsmr_Rm, 4)
+cov_Manuf_Rm <- round(cov_Manuf_Rm, 4)
+cov_HiTec_Rm <- round(cov_HiTec_Rm, 4)
+cov_Hlth_Rm <- round(cov_Hlth_Rm, 4)
+
+covariances <- data.frame(
+  Industry = c("Cnsmr", "Manuf", "HiTec", "Hlth"),
+  Covariance_with_Rm = c(cov_Cnsmr_Rm, cov_Manuf_Rm, cov_HiTec_Rm, cov_Hlth_Rm)
+)
+
+print(covariances)
+```
+
+### 5. Use the results obtained so far to compute the beta values for the first four industries for the full sample
+
+```{r}
+# calculate the variance of the portfolio returns (Rm)
+var_Rm <- var(data$Portfolio_Returns, use = "complete.obs")
+var_Rm <- round(var_Rm, 4)
+
+# calculate the beta values for each industry
+beta_Cnsmr <- cov_Cnsmr_Rm / var_Rm
+beta_Manuf <- cov_Manuf_Rm / var_Rm
+beta_HiTec <- cov_HiTec_Rm / var_Rm
+beta_Hlth <- cov_Hlth_Rm / var_Rm
+
+beta_Cnsmr <- round(beta_Cnsmr, 4)
+beta_Manuf <- round(beta_Manuf, 4)
+beta_HiTec <- round(beta_HiTec, 4)
+beta_Hlth <- round(beta_Hlth, 4)
+
+beta_values <- data.frame(
+  Industry = c("Cnsmr", "Manuf", "HiTec", "Hlth"),
+  Beta = c(beta_Cnsmr, beta_Manuf, beta_HiTec, beta_Hlth)
+)
+print(beta_values)
+```
+
+### 6. Compute the beta values for the first four industries for the sample starting from 199706. Briefly comment on how results compare with those in point (5)
+
+```{r}
+var_Rm_filtered <- var(portfolio_returns_filtered, use = "complete.obs")
+
+beta_Cnsmr_filtered <- cov(data_filtered$Cnsmr, data_filtered$Portfolio_Returns, use = "complete.obs") / var_Rm_filtered
+beta_Manuf_filtered <- cov(data_filtered$Manuf, data_filtered$Portfolio_Returns, use = "complete.obs") / var_Rm_filtered
+beta_HiTec_filtered <- cov(data_filtered$HiTec, data_filtered$Portfolio_Returns, use = "complete.obs") / var_Rm_filtered
+beta_Hlth_filtered <- cov(data_filtered$Hlth, data_filtered$Portfolio_Returns, use = "complete.obs") / var_Rm_filtered
+
+beta_Cnsmr_filtered <- round(beta_Cnsmr_filtered, 4)
+beta_Manuf_filtered <- round(beta_Manuf_filtered, 4)
+beta_HiTec_filtered <- round(beta_HiTec_filtered, 4)
+beta_Hlth_filtered <- round(beta_Hlth_filtered, 4)
+
+beta_values_filtered <- data.frame(
+  Industry = c("Cnsmr", "Manuf", "HiTec", "Hlth"),
+  Beta_Filtered = c(beta_Cnsmr_filtered, beta_Manuf_filtered, beta_HiTec_filtered, beta_Hlth_filtered)
+)
+print(beta_values_filtered)
+```
+
+```{r}
+comparison <- data.frame(
+  Industry = c("Cnsmr", "Manuf", "HiTec", "Hlth"),
+  Beta_Full_Sample = c(beta_Cnsmr, beta_Manuf, beta_HiTec, beta_Hlth),  # point 5
+  Beta_Filtered = c(beta_Cnsmr_filtered, beta_Manuf_filtered, beta_HiTec_filtered, beta_Hlth_filtered)  # point 6
+)
+print(comparison)
+```
+
+The comparison of beta values between the full sample and the post-June 1997 period shows some notable changes. For Consumer stocks, the beta decreases from 1.00 in the full sample to 0.9236 in the filtered period, indicating slightly less sensitivity to the market. Similarly, Manufacturing shows a reduction in beta from 1.04 to 0.9533, suggesting that its returns are less volatile relative to the market in the more recent period. In contrast, Technology stocks see a significant increase in beta from 1.00 to 1.3305, implying a stronger reaction to market movements in the post-1997 period. Lastly, Health stocks exhibit a lower beta, decreasing from 0.96 to 0.7926, indicating that they have become less sensitive to market fluctuations. Overall, the results suggest that Technology has become more volatile relative to the market, while the other industries show reduced sensitivity in the more recent period.
+
+### 7. Assuming a risk-free rate of 5%, compute Jensen’s alpha for each of the first four industries (on the full sample). Report the alpha in percentage terms. Briefly discuss your results
+
+```{r}
+annualized_returns_industries <- annualized_means
+risk_free_rate <- 0.05
+
+alpha_Cnsmr <- (annualized_returns_industries["Cnsmr"] - (risk_free_rate + beta_Cnsmr * (annualized_mean_portfolio - risk_free_rate))) * 100
+alpha_Manuf <- (annualized_returns_industries["Manuf"] - (risk_free_rate + beta_Manuf * (annualized_mean_portfolio - risk_free_rate))) * 100
+alpha_HiTec <- (annualized_returns_industries["HiTec"] - (risk_free_rate + beta_HiTec * (annualized_mean_portfolio - risk_free_rate))) * 100
+alpha_Hlth <- (annualized_returns_industries["Hlth"] - (risk_free_rate + beta_Hlth * (annualized_mean_portfolio - risk_free_rate))) * 100
+
+jensens_alpha <- data.frame(
+  Industry = c("Cnsmr", "Manuf", "HiTec", "Hlth"),
+  Alpha = round(c(alpha_Cnsmr, alpha_Manuf, alpha_HiTec, alpha_Hlth), 4)
+)
+print(jensens_alpha)
+```
+
+The Jensen’s alpha results, reported in percentage terms, show varying performance across the four industries. Consumer stocks have an alpha of 0.0051%, indicating performance roughly in line with expectations under the CAPM model. Manufacturing stocks, on the other hand, have a negative alpha of -0.9107%, meaning they significantly underperformed relative to what the CAPM would predict. Similarly, Technology stocks exhibit a negative alpha of -0.1149%, suggesting a slight underperformance. In contrast, Health stocks stand out with a positive alpha of 1.0209%, indicating that this sector outperformed its expected return by over 1%, given its risk and the market conditions. Overall, the Health sector performed well above expectations, while Manufacturing and Technology stocks underperformed.
+
+## Task 3 {.tabset .tabset-fade}
