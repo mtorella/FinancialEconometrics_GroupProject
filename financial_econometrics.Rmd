@@ -305,3 +305,15 @@ The Jensen’s alpha results, reported in percentage terms, show varying perform
 Use the lm( ) function to run a few regressions:
 
 ### 1. Regress Rm(t) on an intercept and on Rm(t−1). Report estimates and t-statistics. Briefly interpret the results
+
+### 2. Regress Rm(t) on an intercept and on (Pm(t−1)/Pm(t−13)−1). Report estimates and t-statistics. Briefly interpret the results
+
+### 3. Are the t-statistics reported by lm( ) in (2) reliable? Explain
+
+### 4. Regress Rm(t) on an intercept and on abs(Rm(t)). Report estimates and t-statistics. Briefly interpret the results
+
+### 5. Repeat (1) on data from 199706. (Delete all data prior to 199706, then compute lagged returns). Comment briefly
+
+### 6.Repeat (2) on data from 199706. (Delete all data prior to 199706, then compute lagged returns). Comment briefly
+
+### 7. Repeat (4) on data from 199706. Comment briefly
