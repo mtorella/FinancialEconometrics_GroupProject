@@ -2,6 +2,7 @@
 title: "Financial Econometrics - Group Assignment"
 output:
   html_document: default
+  #pdf_document: default
 ---
 
 # Varianza Italiana {.tabset .tabset-fade}

@@ -1,4 +1,4 @@
-
+# NOT UPDATED, just look at RMD file for the latest version
 # TASK 1
 
 data <- read.csv("FIN 36182-Industry_Portfolios.CSV")
