@@ -361,6 +361,29 @@ Based on the results of your regression model where Rm(t) is regressed on (Rm(tâ
 
 ### 4. Regress Rm(t) on an intercept and on abs(Rm(t)). Report estimates and t-statistics. Briefly interpret the results
 
+```{r message=FALSE, warning=FALSE}
+data <- data %>%
+  mutate(abs_Rm = abs(Portfolio_Returns))
+head(data)
+```
+
+```{r}
+model_3 <- lm(Portfolio_Returns ~ abs_Rm, data = data)
+summary(model_3)
+```
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(data, aes(x = abs_Rm, y = Portfolio_Returns)) +
+  geom_point(color = "blue", alpha = 0.6) +  # Scatter plot of returns
+  geom_smooth(method = "lm", color = "red", se = FALSE) +  # Regression line without confidence interval
+  labs(title = "Regression of Portfolio Returns on Absolute Returns",
+       x = "Absolute Returns (abs(R_m(t)))",
+       y = "Portfolio Returns (R_m(t))") +
+  theme_minimal()
+```
+
+The regression of portfolio returns Rm(t) on the absolute value of returns abs(Rm(t)) reveals some notable findings. The intercept is estimated at 0.003313 (approximately 0.33%), but it is not statistically significant, with a t-value of 1.573 and a p-value of 0.116, suggesting that the expected return when the absolute value of returns is zero is not different from zero in a statistically significant way. However, the coefficient for abs(Rm(t)) is estimated at 0.18372, which is statistically significant with a t-value of 4.454 and a p-value of 9.22e-06. This implies that larger absolute returns (whether positive or negative) are associated with higher current returns, indicating a relationship between volatility (represented by absolute returns) and current portfolio returns. The R-squared value of 0.01662 is low, meaning that only about 1.66% of the variation in portfolio returns is explained by the absolute value of returns. While the relationship between volatility and returns is statistically significant, the explanatory power of the model is limited, suggesting other factors likely play a more substantial role in determining portfolio returns.
+
 ### 5. Repeat (1) on data from 199706. (Delete all data prior to 199706, then compute lagged returns). Comment briefly
 
 ### 6.Repeat (2) on data from 199706. (Delete all data prior to 199706, then compute lagged returns). Comment briefly
