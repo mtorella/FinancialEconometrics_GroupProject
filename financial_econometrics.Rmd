@@ -124,14 +124,12 @@ The portfolio returns exhibit significant volatility, especially in the earlier 
 In this task you will treat the portfolio you computed in Task 1, point (6), as the market portfolio, denote its returns as Rm, and will estimate and interpret beta and alpha coefficients in the context of the CAPM.
 
 ### 1. Compute the kurtosis and skeweness of Rm
-
 ```{r, warning=FALSE, message=FALSE}
-n <- length(portfolio_returns)
+library(moments)
 
-skewness_value <- (n / ((n - 1) * (n - 2))) * sum(((portfolio_returns - mean_portfolio) / sd_portfolio)^3, na.rm = TRUE)
-kurtosis_value <- (n * (n + 1) / ((n - 1) * (n - 2) * (n - 3))) * 
-                  sum(((portfolio_returns - mean_portfolio) / sd_portfolio)^4) - 
-                  (3 * (n - 1)^2 / ((n - 2) * (n - 3)))
+skewness_value <- skewness(data$Portfolio_Returns, na.rm = TRUE)
+kurtosis_value <- kurtosis(data$Portfolio_Returns, na.rm = TRUE)
+
 kurtosis_value <- round(kurtosis_value, 4)
 skewness_value <- round(skewness_value, 4)
 
@@ -153,13 +151,13 @@ ggplot(data = data.frame(returns = data$Portfolio_Returns), aes(x = returns)) +
                 color = "green", linetype = "dashed", size = 1) +
   labs(title = "Distribution of Portfolio Returns with Normal Distribution Overlay",
        x = "Portfolio Returns",
-       y = "Density") +
+       y = "Density") + 
   theme_minimal()
 ```
 
 
 ### 2. How do the values in (1) compare with the normal distribution?
-The portfolio returns exhibit a kurtosis of 7.3218, which is significantly higher than the normal distribution’s kurtosis of 3, indicating the presence of fat tails. This suggests that the portfolio is more likely to experience extreme returns, both positive and negative, compared to a normal distribution. In contrast, the skewness of 0.0237 is very close to zero, implying that the distribution of returns is symmetric, with no significant bias toward either side. Overall, while the portfolio returns are prone to extreme fluctuations, these events are equally likely to be positive or negative, reflecting a balance in the distribution’s shape.
+The portfolio returns exhibit a kurtosis of 10.2856, which is significantly higher than the normal distribution’s kurtosis of 3, indicating the presence of fat tails. This suggests that the portfolio is more likely to experience extreme returns, both positive and negative, compared to a normal distribution. In contrast, the skewness of 0.0237 is very close to zero, implying that the distribution of returns is symmetric, with no significant bias toward either side. Overall, while the portfolio returns are prone to extreme fluctuations, these events are equally likely to be positive or negative, reflecting a balance in the distribution’s shape.
 
 Moreover, the above plot shows the distribution of portfolio returns (blue histogram with red density curve) overlaid with a normal distribution (green dashed line). The portfolio returns exhibit fatter tails compared to the normal distribution, particularly on the left side, which is consistent with the high kurtosis observed earlier, indicating a higher probability of extreme returns. The distribution is also roughly symmetric, aligning with the nearly zero skewness, showing no significant bias toward either positive or negative returns. Additionally, the portfolio’s return distribution has a slightly higher peak than the normal curve, suggesting a greater concentration of returns near the mean. Overall, the portfolio returns deviate from the normal distribution, with a greater chance of extreme events and a higher central concentration of values.
 
@@ -169,15 +167,8 @@ Moreover, the above plot shows the distribution of portfolio returns (blue histo
 data_filtered <- data[data$Date >= as.Date("1997-06-01"), ]
 portfolio_returns_filtered <- data_filtered$Portfolio_Returns
 
-n_filtered <- length(portfolio_returns_filtered)
-mean_filtered <- mean(portfolio_returns_filtered)
-sd_filtered <- sd(portfolio_returns_filtered)
-
-skewness_filtered <- (n_filtered / ((n_filtered - 1) * (n_filtered - 2))) * 
-                      sum(((portfolio_returns_filtered - mean_filtered) / sd_filtered)^3)
-kurtosis_filtered <- (n_filtered * (n_filtered + 1) / ((n_filtered - 1) * (n_filtered - 2) * (n_filtered - 3))) * 
-                      sum(((portfolio_returns_filtered - mean_filtered) / sd_filtered)^4) - 
-                      (3 * (n_filtered - 1)^2 / ((n_filtered - 2) * (n_filtered - 3)))
+skewness_filtered <- skewness(portfolio_returns_filtered, na.rm = TRUE)
+kurtosis_filtered <- kurtosis(portfolio_returns_filtered, na.rm = TRUE)
 
 skewness_filtered <- round(skewness_filtered, 4)
 kurtosis_filtered <- round(kurtosis_filtered, 4)
@@ -307,9 +298,66 @@ Use the lm( ) function to run a few regressions:
 
 ### 1. Regress Rm(t) on an intercept and on Rm(t−1). Report estimates and t-statistics. Briefly interpret the results
 
+```{r}
+library(dplyr)
+data <- data %>%
+  mutate(Rm_lag = lag(Portfolio_Returns, 1))
+head(data)
+```
+
+```{r}
+model <- lm(Portfolio_Returns ~ Rm_lag, data = data)
+summary(model)
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+library(ggplot2)
+ggplot(data, aes(x = Rm_lag, y = Portfolio_Returns)) +
+  geom_point(color = "blue", alpha = 0.6) +  # Scatter plot of returns
+  geom_smooth(method = "lm", color = "red", se = FALSE) +  # Regression line without confidence interval
+  labs(title = "Regression of Portfolio Returns on Lagged Returns",
+       x = "Lagged Portfolio Returns (R_m(t-1))",
+       y = "Portfolio Returns (R_m(t))") +
+  theme_minimal()
+```
+
+The regression of current portfolio returns Rm(t) on lagged returns Rm(t-1) shows a small but significant positive relationship. The coefficient for the lagged returns is 0.0809, indicating that for every 1-unit increase in the lagged returns, the current returns increase by about 0.0809 units. This coefficient is statistically significant (p-value = 0.00552), meaning that the relationship between lagged and current returns is unlikely to be due to chance.
+However, the R-squared value is very low, at only 0.65%, suggesting that the lagged returns explain only a tiny fraction of the variation in current returns. Most of the variability in the portfolio returns is not captured by the lagged returns, indicating that other factors or random fluctuations have a much larger influence.
+The intercept is 0.009287 and is highly significant (p-value = 5.76 \ times 10^{-10}), suggesting that even when the lagged returns are zero, the portfolio tends to produce a small positive return of about 0.93%. While the lagged returns do show some predictive power, their overall effect on current returns is weak, as evidenced by the low explanatory power of the model.
+
 ### 2. Regress Rm(t) on an intercept and on (Pm(t−1)/Pm(t−13)−1). Report estimates and t-statistics. Briefly interpret the results
 
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+data <- data %>%
+  mutate(
+    Rm_lag13 = lag(Portfolio_Returns, 13),  # Return at t-13
+    Return_Ratio = (Rm_lag / Rm_lag13) - 1  # Calculate (Rm(t-1)/Rm(t-13)) - 1
+  )
+head(data,20)
+```
+
+```{r}
+model_2 <- lm(Portfolio_Returns ~ Return_Ratio, data = data)
+summary(model_2)
+```
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(data, aes(x = Return_Ratio, y = Portfolio_Returns)) +
+  geom_point(color = "blue", alpha = 0.6) + 
+  geom_smooth(method = "lm", color = "red", se = FALSE) +  
+  labs(title = "Regression of Portfolio Returns on Return Ratio",
+       x = "Return Ratio (R_m(t-1) / R_m(t-13) - 1)",
+       y = "Portfolio Returns (R_m(t))") +
+  theme_minimal()
+```
+
+The regression of portfolio returns Rm(t) on the return ratio (Rm(t−1)/Rm(t−13)−1) shows that the intercept is 0.99%, which is statistically significant with a t-value of 6.723 and a p-value of 0.69, indicating a positive baseline return when the return ratio is zero. However, the coefficient for the return ratio is -0.00003002, with a t-value of -0.399 and a p-value of 0.69, suggesting that the return ratio is not a significant predictor of current portfolio returns. The R-squared value is extremely low at 0.0001372, indicating that the return ratio explains only 0.01% of the variation in returns, and the adjusted R-squared is negative, further confirming the poor fit of the model. The F-statistic of 0.1593 and its p-value of 0.69 also indicate that the overall model is not statistically significant. In conclusion, the return ratio provides no meaningful explanatory power for current portfolio returns, and other factors likely drive the variation in returns.
+
 ### 3. Are the t-statistics reported by lm( ) in (2) reliable? Explain
+
+Based on the results of your regression model where Rm(t) is regressed on (Rm(t−1)/Rm(t−13)−1), the t-statistics reported by lm() are likely not reliable. The model shows a very low R-squared value (0.0001372), indicating that the independent variable explains almost none of the variation in the dependent variable. Additionally, the coefficient for the return ratio is extremely close to zero and statistically insignificant (p-value = 0.69). This suggests that the model provides very little explanatory power. Furthermore, because you’re dealing with time series data, there’s a strong possibility of autocorrelation in the residuals, which violates one of the key assumptions of ordinary least squares (OLS) regression. Autocorrelation can lead to underestimated or overestimated standard errors, making the t-statistics unreliable. Therefore, without further diagnostic checks for autocorrelation or heteroscedasticity, the t-statistics reported by lm() should be treated with caution, and it’s likely that they do not provide an accurate assessment of the significance of the coefficients.
 
 ### 4. Regress Rm(t) on an intercept and on abs(Rm(t)). Report estimates and t-statistics. Briefly interpret the results
 
