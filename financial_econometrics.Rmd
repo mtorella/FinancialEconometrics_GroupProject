@@ -332,25 +332,38 @@ The intercept is 0.009287 and is highly significant (p-value = 5.76 \ times 10^{
 
 ### 2. Regress Rm(t) on an intercept and on (Pm(t−1)/Pm(t−13)−1). Report estimates and t-statistics. Briefly interpret the results
 
-```{r, warning=FALSE, message=FALSE}
+```{r}
+
+# Calculate cumulative return indices for each industry 
+data$index_Cnsmr <- cumprod(1 + data$Cnsmr)
+data$index_Manuf <- cumprod(1 + data$Manuf)
+data$index_HiTec <- cumprod(1 + data$HiTec)
+data$index_Hlth <- cumprod(1 + data$Hlth)
+
+# Calculate the composite index as an average of the individual indices
+data$Composite_Index <- rowMeans(data[, c("index_Cnsmr", "index_Manuf", "index_HiTec", "index_Hlth")])
+
+
+# Use mutate() and lag() from dplyr to calculate the Momentum variable
 data <- data %>%
   mutate(
-    Rm_lag13 = lag(Portfolio_Returns, 13),  
-    Return_Ratio = (Rm_lag / Rm_lag13) - 1  
+    Momentum = (lag(Composite_Index, 1) / lag(Composite_Index, 13)) - 1
   )
-head(data,20)
+
 ```
 
+
+
 ```{r}
-model_2 <- lm(Portfolio_Returns ~ Return_Ratio, data = data)
+model_2 <- lm(Portfolio_Returns ~ Momentum, data = data)
 summary(model_2)
 ```
 
 ```{r, warning=FALSE, message=FALSE}
-ggplot(data, aes(x = Return_Ratio, y = Portfolio_Returns)) +
+ggplot(data, aes(x = Momentum, y = Portfolio_Returns)) +
   geom_point(color = "blue", alpha = 0.6) + 
   geom_smooth(method = "lm", color = "red", se = FALSE) +  
-  labs(title = "Regression of Portfolio Returns on Return Ratio",
+  labs(title = "Regression of Portfolio Returns on Price Ratio",
        x = "Return Ratio (R_m(t-1) / R_m(t-13) - 1)",
        y = "Portfolio Returns (R_m(t))") +
   theme_minimal()
