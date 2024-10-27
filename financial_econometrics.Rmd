@@ -28,7 +28,7 @@ head(data)
 ```
 ## Task 1 {.tabset .tabset-fade}
 
-### 1. Report the arithmetic mean of the returns for each of the five industries over the entire sample
+### 1. Report the arithmetic mean of the returns for each of the five industries over the entire sample.
 
 ```{r}
 monthly_means <- colMeans(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")]) 
@@ -37,7 +37,7 @@ annualized_means <- round(annualized_means, 4)
 annualized_means
 ```
 
-### 2. Report the standard deviation of the returns for each of the five industries over the entire sample
+### 2. Report the standard deviation of the returns for each of the five industries over the entire sample.
 
 ```{r}
 monthly_std <- apply(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")], 2, sd)
@@ -46,7 +46,7 @@ annualized_std <- round(annualized_std, 4)
 annualized_std
 ```
 
-### 3. Report the Sharpe ratio of each industry
+### 3. Report the Sharpe ratio of each industry.
 
 ```{r}
 sharpe_ratios <- annualized_means / annualized_std
@@ -63,7 +63,7 @@ results_table1 <- data.frame(
 results_table1
 ```
 
-### 5. Provide a table (5×5) with the sample correlation between the returns of the five industries. Comment briefly.
+### 5. Provide a table (5×5) with the sample correlation between the returns of the five industries.
 
 ```{r}
 correlation_matrix <- cor(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")])
@@ -80,8 +80,6 @@ corrplot(correlation_matrix, method = "color", type = "upper",
          number.cex = 0.8,       
          number.digits = 2)      
 ```
-
-The correlation matrix indicates that all five industries have positive correlations with each other, suggesting that their returns tend to move in the same direction. The strongest correlations are between Manufacturing and Other (0.8924) and between Manufacturing and Consumer (0.8670), indicating that these industries have highly synchronized return movements. On the other hand, the weakest correlations are between Technology and Health (0.7072), and between these two industries and the others, implying that Technology and Health exhibit slightly more independent return patterns. While the positive correlations across all industries suggest some degree of co-movement, the relatively lower correlations for Technology and Health indicate potential diversification benefits, though the absence of negative correlations limits the extent of diversification.
 
 ### 6. Construct a time series of the simple, non-cumulative returns of a portfolio where capital is allocated equally across the first four industries (excluding Other). Report the arithmetic mean, standard deviation and Sharpe. Comment briefly on the gains achieved by this diversified portfolio.
 
