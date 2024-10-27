@@ -63,9 +63,6 @@ results_table1 <- data.frame(
 results_table1
 ```
 
-### 4. Is there evidence that technology stocks have better risk-adjusted returns?
-Based on the results, technology stocks (HiTec) have a Sharpe ratio of 0.6216, indicating better risk-adjusted returns compared to the manufacturing (0.6045) and other sectors (0.4994). However, they do not outperform the consumer (0.6646) and health industries (0.6746), which exhibit higher Sharpe ratios. Therefore, while technology stocks offer relatively good risk-adjusted returns, they are not the best performers overall, as both the consumer and health sectors deliver better risk-adjusted outcomes.
-
 ### 5. Provide a table (5×5) with the sample correlation between the returns of the five industries. Comment briefly.
 
 ```{r}
@@ -333,47 +330,41 @@ The intercept is 0.009287 and is highly significant (p-value = 5.76 \ times 10^{
 ### 2. Regress Rm(t) on an intercept and on (Pm(t−1)/Pm(t−13)−1). Report estimates and t-statistics. Briefly interpret the results
 
 ```{r}
+data$Pm <- NA  # initializing the price series
+data$Pm[1] <- 1  # arbitrary starting price
 
-# Calculate cumulative return indices for each industry 
-data$index_Cnsmr <- cumprod(1 + data$Cnsmr)
-data$index_Manuf <- cumprod(1 + data$Manuf)
-data$index_HiTec <- cumprod(1 + data$HiTec)
-data$index_Hlth <- cumprod(1 + data$Hlth)
+# calculate Pm(t) iteratively based on Rm(t) = (Pm(t)/Pm(t-1)) - 1
+for (i in 2:nrow(data)) {
+  data$Pm[i] <- data$Pm[i - 1] * (1 + data$Portfolio_Returns[i])
+}
 
-# Calculate the composite index as an average of the individual indices
-data$Composite_Index <- rowMeans(data[, c("index_Cnsmr", "index_Manuf", "index_HiTec", "index_Hlth")])
-
-
-# Use mutate() and lag() from dplyr to calculate the Momentum variable
-data <- data %>%
-  mutate(
-    Momentum = (lag(Composite_Index, 1) / lag(Composite_Index, 13)) - 1
-  )
-
+data$Pm_lag1 <- dplyr::lag(data$Pm, 1)   
+data$Pm_lag13 <- dplyr::lag(data$Pm, 13) 
+data$Pm_ratio <- (data$Pm_lag1 / data$Pm_lag13) - 1
+head(data,20)
 ```
-
 
 
 ```{r}
-model_2 <- lm(Portfolio_Returns ~ Momentum, data = data)
-summary(model_2)
+model2 <- lm(Portfolio_Returns ~ Pm_ratio, data = data)
+summary(model2)
 ```
 
 ```{r, warning=FALSE, message=FALSE}
-ggplot(data, aes(x = Momentum, y = Portfolio_Returns)) +
-  geom_point(color = "blue", alpha = 0.6) + 
-  geom_smooth(method = "lm", color = "red", se = FALSE) +  
-  labs(title = "Regression of Portfolio Returns on Price Ratio",
-       x = "Return Ratio (R_m(t-1) / R_m(t-13) - 1)",
+ggplot(data, aes(x = Pm_ratio, y = Portfolio_Returns)) +
+  geom_point(color = "blue", alpha = 0.6) +  # Scatter plot of Portfolio Returns vs. Pm_ratio
+  geom_smooth(method = "lm", color = "red", se = FALSE) +  # Regression line without confidence interval
+  labs(title = "Regression of Portfolio Returns on Pm_ratio",
+       x = "Pm_ratio (Pm(t-1) / Pm(t-13) - 1)",
        y = "Portfolio Returns (R_m(t))") +
   theme_minimal()
 ```
 
-The regression of portfolio returns Rm(t) on the return ratio (Rm(t−1)/Rm(t−13)−1) shows that the intercept is 0.99%, which is statistically significant with a t-value of 6.723 and a p-value of 0.69, indicating a positive baseline return when the return ratio is zero. However, the coefficient for the return ratio is -0.00003002, with a t-value of -0.399 and a p-value of 0.69, suggesting that the return ratio is not a significant predictor of current portfolio returns. The R-squared value is extremely low at 0.0001372, indicating that the return ratio explains only 0.01% of the variation in returns, and the adjusted R-squared is negative, further confirming the poor fit of the model. The F-statistic of 0.1593 and its p-value of 0.69 also indicate that the overall model is not statistically significant. In conclusion, the return ratio provides no meaningful explanatory power for current portfolio returns, and other factors likely drive the variation in returns.
+The regression results show that the intercept (0.009275) is statistically significant (p < 0.001), indicating an average portfolio return of approximately 0.93% when Pm_ratio is zero. However, the coefficient for Pm_ratio (0.005439) is not statistically significant (p = 0.472), suggesting no meaningful relationship between Pm_ratio and Portfolio_Returns. The low R-squared (0.000445) indicates that Pm_ratio explains virtually none of the variance in Portfolio_Returns. Overall, this model implies that Pm_ratio does not provide useful predictive information about portfolio returns, as seen by the flat trend in the scatter plot with regression line.
 
 ### 3. Are the t-statistics reported by lm( ) in (2) reliable? Explain
 
-Based on the results of your regression model where Rm(t) is regressed on (Rm(t−1)/Rm(t−13)−1), the t-statistics reported by lm() are likely not reliable. The model shows a very low R-squared value (0.0001372), indicating that the independent variable explains almost none of the variation in the dependent variable. Additionally, the coefficient for the return ratio is extremely close to zero and statistically insignificant (p-value = 0.69). This suggests that the model provides very little explanatory power. Furthermore, because you’re dealing with time series data, there’s a strong possibility of autocorrelation in the residuals, which violates one of the key assumptions of ordinary least squares (OLS) regression. Autocorrelation can lead to underestimated or overestimated standard errors, making the t-statistics unreliable. Therefore, without further diagnostic checks for autocorrelation or heteroscedasticity, the t-statistics reported by lm() should be treated with caution, and it’s likely that they do not provide an accurate assessment of the significance of the coefficients.
+The t-statistics reported by lm() in this regression may not be entirely reliable due to the low explanatory power of the model, indicated by the extremely low R-squared value (0.000445). This suggests that Pm_ratio explains almost none of the variability in Portfolio_Returns, which implies a weak relationship between the predictor and the outcome variable. When the model has such poor fit, the standard errors might not fully capture the variability in the data, potentially leading to misleading t-statistics. Furthermore, any assumption violations (like non-normality or heteroscedasticity in residuals) could further impact the reliability of these t-statistics. Therefore, while the t-statistics provide some insight, they should be interpreted with caution, given the model’s poor fit and lack of explanatory power.
 
 ### 4. Regress Rm(t) on an intercept and on abs(Rm(t)). Report estimates and t-statistics. Briefly interpret the results
 
@@ -433,32 +424,25 @@ The regression of portfolio returns Rm(t) on lagged returns Rm(t-1), using data 
 ### 6.Repeat (2) on data from 199706. (Delete all data prior to 199706, then compute lagged returns). Comment briefly
 
 ```{r}
-data_filtered <- data_filtered %>%
-  mutate(
-    Rm_lag13 = lag(Portfolio_Returns, 13),  
-    Return_Ratio = (Rm_lag / Rm_lag13) - 1 
-  )
-
 head(data_filtered, 20)
 ```
 
 ```{r}
-model_2 <- lm(Portfolio_Returns ~ Return_Ratio, data = data_filtered)
+model_2 <- lm(Portfolio_Returns ~ Pm_ratio, data = data_filtered)
 summary(model_2)
 ```
 
 ```{r, warning=FALSE, message=FALSE}
-ggplot(data_filtered, aes(x = Return_Ratio, y = Portfolio_Returns)) +
-  geom_point(color = "blue", alpha = 0.6) + 
-  geom_smooth(method = "lm", color = "red", se = FALSE) +  
-  labs(title = "Regression of Portfolio Returns on Return Ratio (Post-1997)",
-       x = "Return Ratio (R_m(t-1) / R_m(t-13) - 1)",
+ggplot(data_filtered, aes(x = Pm_ratio, y = Portfolio_Returns)) +
+  geom_point(color = "blue", alpha = 0.6) +
+  geom_smooth(method = "lm", color = "red", se = FALSE) +
+  labs(title = "Regression of Portfolio Returns on Pm_ratio",
+       x = "Pm_ratio (Pm(t-1) / Pm(t-13) - 1)",
        y = "Portfolio Returns (R_m(t))") +
   theme_minimal()
-
 ```
 
-The regression of portfolio returns Rm(t) on the return ratio (R_m(t-1) / R_m(t-13) - 1), using data from June 1997 onward, shows that the intercept is significant, estimated at 0.008568 (about 0.86%) with a t-value of 3.535 and a p-value of 0.00047. However, the coefficient for the return ratio is 7.279e-05, with a t-value of 0.188 and a p-value of 0.85135, indicating that the return ratio is not a significant predictor of current portfolio returns. The R-squared is 0.0001135, meaning that the return ratio explains only a tiny fraction (0.01%) of the variance in the portfolio returns. The adjusted R-squared is negative, further highlighting the poor fit of the model. Overall, the return ratio does not appear to have any meaningful explanatory power for current returns in this dataset.
+The regression results show that the intercept (0.009151) is statistically significant (p = 0.00194), suggesting an average portfolio return of approximately 0.92% when Pm_ratio is zero. However, the coefficient for Pm_ratio (-7.716e-07) is essentially zero and has an extremely high p-value (0.99996), indicating that Pm_ratio has no statistically significant effect on Portfolio_Returns. The R-squared value (8.185e-12) and adjusted R-squared (-0.003096) are both near zero, meaning that the model explains virtually none of the variance in Portfolio_Returns. The F-statistic is also effectively zero, with a p-value of 1, further confirming the lack of relationship. Overall, this model indicates that Pm_ratio does not provide any meaningful predictive information for portfolio returns, as also visualized by the flat regression line in the scatter plot.
 
 ### 7. Repeat (4) on data from 199706. Comment briefly
 
