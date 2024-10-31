@@ -119,7 +119,7 @@ ggplot(plot_data, aes(x = Date, y = Portfolio_Returns)) +
 In this task you will treat the portfolio you computed in Task 1, point (6), as the market portfolio, denote its returns as Rm, and will estimate and interpret beta and alpha coefficients in the context of the CAPM.
 
 ### 1. Compute the kurtosis and skeweness of Rm
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, results=FALSE}
 library(moments)
 
 skewness_value <- skewness(data$Portfolio_Returns, na.rm = TRUE)
@@ -135,7 +135,7 @@ portfolio_results2 <- data.frame(
 print(portfolio_results2)
 ```
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, results=FALSE, fig.show='hide'}
 library(ggplot2)
 ggplot(data = data.frame(returns = data$Portfolio_Returns), aes(x = returns)) +
   geom_histogram(aes(y = ..density..), bins = 30, fill = "blue", color = "black", alpha = 0.7) +
@@ -152,7 +152,7 @@ ggplot(data = data.frame(returns = data$Portfolio_Returns), aes(x = returns)) +
 
 ### 3. Repeat point (1), but eliminating the first 70 years of data (i.e. from 199706).
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 data_filtered <- data[data$Date >= as.Date("1997-06-01"), ]
 portfolio_returns_filtered <- data_filtered$Portfolio_Returns
 
@@ -169,7 +169,7 @@ portfolio_results3 <- data.frame(
 print(portfolio_results3)
 ```
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE, fig.show='hide'}
 ggplot(data = data.frame(returns = portfolio_returns_filtered), aes(x = returns)) +
   geom_histogram(aes(y = after_stat(density)), bins = 30, fill = "blue", color = "black", alpha = 0.7) +
   geom_density(color = "red", linewidth = 1) +
@@ -185,7 +185,7 @@ ggplot(data = data.frame(returns = portfolio_returns_filtered), aes(x = returns)
 
 ### 4. Compute and report the covariance of the first four industries with Rm
 
-```{r}
+```{r, results=FALSE}
 cov_Cnsmr_Rm <- cov(data$Cnsmr, data$Portfolio_Returns, use = "complete.obs")
 cov_Manuf_Rm <- cov(data$Manuf, data$Portfolio_Returns, use = "complete.obs")
 cov_HiTec_Rm <- cov(data$HiTec, data$Portfolio_Returns, use = "complete.obs")
@@ -206,7 +206,7 @@ print(covariances)
 
 ### 5. Use the results obtained so far to compute the beta values for the first four industries for the full sample
 
-```{r}
+```{r, results=FALSE}
 # calculate the variance of the portfolio returns (Rm)
 var_Rm <- var(data$Portfolio_Returns, use = "complete.obs")
 var_Rm <- round(var_Rm, 4)
@@ -231,7 +231,7 @@ print(beta_values)
 
 ### 6. Compute the beta values for the first four industries for the sample starting from 199706. Briefly comment on how results compare with those in point (5)
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 var_Rm_filtered <- var(portfolio_returns_filtered, use = "complete.obs")
 
 beta_Cnsmr_filtered <- cov(data_filtered$Cnsmr, data_filtered$Portfolio_Returns, use = "complete.obs") / var_Rm_filtered
@@ -251,7 +251,7 @@ beta_values_filtered <- data.frame(
 print(beta_values_filtered)
 ```
 
-```{r}
+```{r, results=FALSE}
 comparison <- data.frame(
   Industry = c("Cnsmr", "Manuf", "HiTec", "Hlth"),
   Beta_Full_Sample = c(beta_Cnsmr, beta_Manuf, beta_HiTec, beta_Hlth),  # point 5
@@ -262,7 +262,7 @@ print(comparison)
 
 ### 7. Assuming a risk-free rate of 5%, compute Jensen’s alpha for each of the first four industries (on the full sample). Report the alpha in percentage terms. 
 
-```{r}
+```{r, results=FALSE}
 annualized_returns_industries <- annualized_means
 risk_free_rate <- 0.05
 
