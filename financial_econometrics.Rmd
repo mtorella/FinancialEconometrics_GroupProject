@@ -1,8 +1,8 @@
 ---
 title: "Financial Econometrics - Group Assignment"
 output: 
-  pdf_document:
-    latex_engine: xelatex  
+  #pdf_document:
+    #latex_engine: xelatex  
   html_document:
     df_print: paged
 ---
