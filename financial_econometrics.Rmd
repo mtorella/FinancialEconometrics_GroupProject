@@ -17,7 +17,7 @@ Group members:
 
 ## EDA {.tabset .tabset-fade}
 
-```{r}
+```{r, results=FALSE}
 data <- read.csv("FIN 36182-Industry_Portfolios.CSV")
 head(data)
 sum(is.na(data))
@@ -30,7 +30,7 @@ head(data)
 
 ### 1. Report the arithmetic mean of the returns for each of the five industries over the entire sample.
 
-```{r}
+```{r, results=FALSE}
 monthly_means <- colMeans(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")]) 
 annualized_means <- monthly_means * 12
 annualized_means <- round(annualized_means, 4)
@@ -39,7 +39,7 @@ annualized_means
 
 ### 2. Report the standard deviation of the returns for each of the five industries over the entire sample.
 
-```{r}
+```{r,results=FALSE}
 monthly_std <- apply(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")], 2, sd)
 annualized_std <- monthly_std * sqrt(12)
 annualized_std <- round(annualized_std, 4)
@@ -48,13 +48,13 @@ annualized_std
 
 ### 3. Report the Sharpe ratio of each industry.
 
-```{r}
+```{r, results=FALSE}
 sharpe_ratios <- annualized_means / annualized_std
 sharpe_ratios <- round(sharpe_ratios, 4)
 sharpe_ratios
 ```
 
-```{r}
+```{r, results=FALSE}
 results_table1 <- data.frame(
   Mean_Returns = annualized_means,
   Std_Returns = annualized_std,
@@ -65,14 +65,14 @@ results_table1
 
 ### 5. Provide a table (5×5) with the sample correlation between the returns of the five industries.
 
-```{r}
+```{r, results=FALSE}
 correlation_matrix <- cor(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth", "Other")])
 correlation_matrix <- round(correlation_matrix, 4)
 correlation_df <- as.data.frame(correlation_matrix)
 correlation_df
 ```
 
-```{r, warning=FALSE, message=FALSE}
+```{r, results=FALSE, warning=FALSE, message=FALSE, fig.show='hide'}
 library(corrplot)
 corrplot(correlation_matrix, method = "color", type = "upper", 
          tl.col = "black", tl.srt = 45, 
@@ -81,9 +81,9 @@ corrplot(correlation_matrix, method = "color", type = "upper",
          number.digits = 2)      
 ```
 
-### 6. Construct a time series of the simple, non-cumulative returns of a portfolio where capital is allocated equally across the first four industries (excluding Other). Report the arithmetic mean, standard deviation and Sharpe. Comment briefly on the gains achieved by this diversified portfolio.
+### 6. Construct a time series of the simple, non-cumulative returns of a portfolio where capital is allocated equally across the first four industries (excluding Other). Report the arithmetic mean, standard deviation and Sharpe. 
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, results=FALSE}
 portfolio_returns <- rowMeans(data[, c("Cnsmr", "Manuf", "HiTec", "Hlth")]) 
 data$Portfolio_Returns <- portfolio_returns
 mean_portfolio <- mean(portfolio_returns)
@@ -100,9 +100,7 @@ portfolio_results <- data.frame(
 print(portfolio_results)
 ```
 
-The diversified portfolio, which allocates capital equally across the first four industries, achieves an annualized mean return of 12.14% and an annualized standard deviation of 17.34%, resulting in a Sharpe ratio of 0.7004. This Sharpe ratio indicates that the portfolio offers better risk-adjusted returns than some individual industries, such as Manufacturing (0.6045) and Other (0.4994). It also slightly outperforms Technology (0.6216), suggesting that diversification has improved the portfolio’s performance relative to risk. However, the gains from diversification are not substantial, as the portfolio’s Sharpe ratio is only marginally higher than that of Health (0.6746) and Consumer (0.6646). Overall, diversification provides some benefit, but the improvement in risk-adjusted returns is moderate.
-
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, results=FALSE, fig.show='hide'}
 library(ggplot2)
 data$Date <- as.character(data$Date)
 data$Date <- paste0(data$Date, "01")
@@ -116,8 +114,6 @@ ggplot(plot_data, aes(x = Date, y = Portfolio_Returns)) +
        y = "Portfolio Returns") +
   theme_minimal()
 ```
-
-The portfolio returns exhibit significant volatility, especially in the earlier periods before the 1950s, with large spikes in both positive and negative directions. This high volatility is particularly evident around historical market crashes, such as the Great Depression in the 1930s and the 2008 financial crisis. After World War II, the portfolio returns become more stable, with fewer extreme fluctuations, though volatility remains, particularly during financial crises. In the last two decades, there has been a noticeable increase in volatility, likely reflecting events like the dot-com bubble, the 2008 crisis, and the COVID-19 market disruptions. Overall, while the portfolio appears more stable post-1950, significant market events continue to cause sharp fluctuations.
 
 ## Task 2 {.tabset .tabset-fade}
 In this task you will treat the portfolio you computed in Task 1, point (6), as the market portfolio, denote its returns as Rm, and will estimate and interpret beta and alpha coefficients in the context of the CAPM.
@@ -153,12 +149,6 @@ ggplot(data = data.frame(returns = data$Portfolio_Returns), aes(x = returns)) +
        y = "Density") + 
   theme_minimal()
 ```
-
-
-### 2. How do the values in (1) compare with the normal distribution?
-The portfolio returns exhibit a kurtosis of 10.2856, which is significantly higher than the normal distribution’s kurtosis of 3, indicating the presence of fat tails. This suggests that the portfolio is more likely to experience extreme returns, both positive and negative, compared to a normal distribution. In contrast, the skewness of 0.0237 is very close to zero, implying that the distribution of returns is symmetric, with no significant bias toward either side. Overall, while the portfolio returns are prone to extreme fluctuations, these events are equally likely to be positive or negative, reflecting a balance in the distribution’s shape.
-
-Moreover, the above plot shows the distribution of portfolio returns (blue histogram with red density curve) overlaid with a normal distribution (green dashed line). The portfolio returns exhibit fatter tails compared to the normal distribution, particularly on the left side, which is consistent with the high kurtosis observed earlier, indicating a higher probability of extreme returns. The distribution is also roughly symmetric, aligning with the nearly zero skewness, showing no significant bias toward either positive or negative returns. Additionally, the portfolio’s return distribution has a slightly higher peak than the normal curve, suggesting a greater concentration of returns near the mean. Overall, the portfolio returns deviate from the normal distribution, with a greater chance of extreme events and a higher central concentration of values.
 
 ### 3. Repeat point (1), but eliminating the first 70 years of data (i.e. from 199706).
 
@@ -270,9 +260,7 @@ comparison <- data.frame(
 print(comparison)
 ```
 
-The comparison of beta values between the full sample and the post-June 1997 period shows some notable changes. For Consumer stocks, the beta decreases from 1.00 in the full sample to 0.9236 in the filtered period, indicating slightly less sensitivity to the market. Similarly, Manufacturing shows a reduction in beta from 1.04 to 0.9533, suggesting that its returns are less volatile relative to the market in the more recent period. In contrast, Technology stocks see a significant increase in beta from 1.00 to 1.3305, implying a stronger reaction to market movements in the post-1997 period. Lastly, Health stocks exhibit a lower beta, decreasing from 0.96 to 0.7926, indicating that they have become less sensitive to market fluctuations. Overall, the results suggest that Technology has become more volatile relative to the market, while the other industries show reduced sensitivity in the more recent period.
-
-### 7. Assuming a risk-free rate of 5%, compute Jensen’s alpha for each of the first four industries (on the full sample). Report the alpha in percentage terms. Briefly discuss your results
+### 7. Assuming a risk-free rate of 5%, compute Jensen’s alpha for each of the first four industries (on the full sample). Report the alpha in percentage terms. 
 
 ```{r}
 annualized_returns_industries <- annualized_means
@@ -289,8 +277,6 @@ jensens_alpha <- data.frame(
 )
 print(jensens_alpha)
 ```
-
-The Jensen’s alpha results, reported in percentage terms, show varying performance across the four industries. Consumer stocks have an alpha of 0.0051%, indicating performance roughly in line with expectations under the CAPM model. Manufacturing stocks, on the other hand, have a negative alpha of -0.9107%, meaning they significantly underperformed relative to what the CAPM would predict. Similarly, Technology stocks exhibit a negative alpha of -0.1149%, suggesting a slight underperformance. In contrast, Health stocks stand out with a positive alpha of 1.0209%, indicating that this sector outperformed its expected return by over 1%, given its risk and the market conditions. Overall, the Health sector performed well above expectations, while Manufacturing and Technology stocks underperformed.
 
 ## Task 3 {.tabset .tabset-fade}
 Use the lm( ) function to run a few regressions:
