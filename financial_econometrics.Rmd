@@ -1,15 +1,13 @@
 ---
 title: "Financial Econometrics - Group Assignment"
 output: 
-  #pdf_document:
-    #latex_engine: xelatex  
+  pdf_document:
+    latex_engine: xelatex  
   html_document:
     df_print: paged
 ---
 
-# Varianza Italiana {.tabset .tabset-fade}
-
-Group members:
+# Group members: {.tabset .tabset-fade}
 
 -   Baldoni Chiara
 -   Pinna Paola
@@ -283,20 +281,20 @@ Use the lm( ) function to run a few regressions:
 
 ### 1. Regress Rm(t) on an intercept and on Rm(t−1). Report estimates and t-statistics. Briefly interpret the results
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
 data <- data %>%
   mutate(Rm_lag = lag(Portfolio_Returns, 1))
 head(data)
 ```
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 model <- lm(Portfolio_Returns ~ Rm_lag, data = data)
 summary(model)
 ```
 
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, results=FALSE, fig.show='hide'}
 library(ggplot2)
 ggplot(data, aes(x = Rm_lag, y = Portfolio_Returns)) +
   geom_point(color = "blue", alpha = 0.6) +  # Scatter plot of returns
@@ -307,13 +305,9 @@ ggplot(data, aes(x = Rm_lag, y = Portfolio_Returns)) +
   theme_minimal()
 ```
 
-The regression of current portfolio returns Rm(t) on lagged returns Rm(t-1) shows a small but significant positive relationship. The coefficient for the lagged returns is 0.0809, indicating that for every 1-unit increase in the lagged returns, the current returns increase by about 0.0809 units. This coefficient is statistically significant (p-value = 0.00552), meaning that the relationship between lagged and current returns is unlikely to be due to chance.
-However, the R-squared value is very low, at only 0.65%, suggesting that the lagged returns explain only a tiny fraction of the variation in current returns. Most of the variability in the portfolio returns is not captured by the lagged returns, indicating that other factors or random fluctuations have a much larger influence.
-The intercept is 0.009287 and is highly significant (p-value = 5.76 \ times 10^{-10}), suggesting that even when the lagged returns are zero, the portfolio tends to produce a small positive return of about 0.93%. While the lagged returns do show some predictive power, their overall effect on current returns is weak, as evidenced by the low explanatory power of the model.
-
 ### 2. Regress Rm(t) on an intercept and on (Pm(t−1)/Pm(t−13)−1). Report estimates and t-statistics. Briefly interpret the results
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 data$Pm <- NA  # initializing the price series
 data$Pm[1] <- 1  # arbitrary starting price
 
@@ -329,12 +323,12 @@ head(data,20)
 ```
 
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 model2 <- lm(Portfolio_Returns ~ Pm_ratio, data = data)
 summary(model2)
 ```
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, results=FALSE, fig.show='hide'}
 ggplot(data, aes(x = Pm_ratio, y = Portfolio_Returns)) +
   geom_point(color = "blue", alpha = 0.6) +  # Scatter plot of Portfolio Returns vs. Pm_ratio
   geom_smooth(method = "lm", color = "red", se = FALSE) +  # Regression line without confidence interval
@@ -344,26 +338,20 @@ ggplot(data, aes(x = Pm_ratio, y = Portfolio_Returns)) +
   theme_minimal()
 ```
 
-The regression results show that the intercept (0.009275) is statistically significant (p < 0.001), indicating an average portfolio return of approximately 0.93% when Pm_ratio is zero. However, the coefficient for Pm_ratio (0.005439) is not statistically significant (p = 0.472), suggesting no meaningful relationship between Pm_ratio and Portfolio_Returns. The low R-squared (0.000445) indicates that Pm_ratio explains virtually none of the variance in Portfolio_Returns. Overall, this model implies that Pm_ratio does not provide useful predictive information about portfolio returns, as seen by the flat trend in the scatter plot with regression line.
-
-### 3. Are the t-statistics reported by lm( ) in (2) reliable? Explain
-
-The t-statistics reported by lm() in this regression may not be entirely reliable due to the low explanatory power of the model, indicated by the extremely low R-squared value (0.000445). This suggests that Pm_ratio explains almost none of the variability in Portfolio_Returns, which implies a weak relationship between the predictor and the outcome variable. When the model has such poor fit, the standard errors might not fully capture the variability in the data, potentially leading to misleading t-statistics. Furthermore, any assumption violations (like non-normality or heteroscedasticity in residuals) could further impact the reliability of these t-statistics. Therefore, while the t-statistics provide some insight, they should be interpreted with caution, given the model’s poor fit and lack of explanatory power.
-
 ### 4. Regress Rm(t) on an intercept and on abs(Rm(t)). Report estimates and t-statistics. Briefly interpret the results
 
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, results=FALSE}
 data <- data %>%
   mutate(abs_Rm = abs(Portfolio_Returns))
 head(data)
 ```
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 model_3 <- lm(Portfolio_Returns ~ abs_Rm, data = data)
 summary(model_3)
 ```
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, results=FALSE, fig.show='hide'}
 ggplot(data, aes(x = abs_Rm, y = Portfolio_Returns)) +
   geom_point(color = "blue", alpha = 0.6) +  # Scatter plot of returns
   geom_smooth(method = "lm", color = "red", se = FALSE) +  # Regression line without confidence interval
@@ -373,11 +361,9 @@ ggplot(data, aes(x = abs_Rm, y = Portfolio_Returns)) +
   theme_minimal()
 ```
 
-The regression of portfolio returns Rm(t) on the absolute value of returns abs(Rm(t)) reveals some notable findings. The intercept is estimated at 0.003313 (approximately 0.33%), but it is not statistically significant, with a t-value of 1.573 and a p-value of 0.116, suggesting that the expected return when the absolute value of returns is zero is not different from zero in a statistically significant way. However, the coefficient for abs(Rm(t)) is estimated at 0.18372, which is statistically significant with a t-value of 4.454 and a p-value of 9.22e-06. This implies that larger absolute returns (whether positive or negative) are associated with higher current returns, indicating a relationship between volatility (represented by absolute returns) and current portfolio returns. The R-squared value of 0.01662 is low, meaning that only about 1.66% of the variation in portfolio returns is explained by the absolute value of returns. While the relationship between volatility and returns is statistically significant, the explanatory power of the model is limited, suggesting other factors likely play a more substantial role in determining portfolio returns.
-
 ### 5. Repeat (1) on data from 199706. (Delete all data prior to 199706, then compute lagged returns). Comment briefly
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 data_filtered <- data %>%
   filter(Date >= as.Date("1997-06-01"))
 
@@ -387,12 +373,12 @@ data_filtered <- data_filtered %>%
 head(data_filtered)
 ```
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 model_filtered <- lm(Portfolio_Returns ~ Rm_lag, data = data_filtered)
 summary(model_filtered)
 ```
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, results=FALSE, fig.show='hide'}
 ggplot(data_filtered, aes(x = Rm_lag, y = Portfolio_Returns)) +
   geom_point(color = "blue", alpha = 0.6) +  
   geom_smooth(method = "lm", color = "red", se = FALSE) +  
@@ -403,20 +389,18 @@ ggplot(data_filtered, aes(x = Rm_lag, y = Portfolio_Returns)) +
 
 ```
 
-The regression of portfolio returns Rm(t) on lagged returns Rm(t-1), using data from June 1997 onward, shows that the intercept is significant, estimated at 0.91% with a p-value of 0.000182, indicating a positive expected return when lagged returns are zero. However, the coefficient for lagged returns is -0.008882, with a t-value of -0.160 and a p-value of 0.8733, suggesting that lagged returns have no statistically significant effect on current returns. The R-squared value is extremely low (0.000079), meaning that the model explains virtually none of the variation in returns, and the adjusted R-squared is negative, further confirming the model’s poor fit. The overall model is not statistically significant, as indicated by the F-statistic of 0.02546 and its p-value of 0.8733. In conclusion, there is no meaningful relationship between past and current returns in this dataset.
-
 ### 6.Repeat (2) on data from 199706. (Delete all data prior to 199706, then compute lagged returns). Comment briefly
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 head(data_filtered, 20)
 ```
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 model_2 <- lm(Portfolio_Returns ~ Pm_ratio, data = data_filtered)
 summary(model_2)
 ```
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, results=FALSE, fig.show='hide'}
 ggplot(data_filtered, aes(x = Pm_ratio, y = Portfolio_Returns)) +
   geom_point(color = "blue", alpha = 0.6) +
   geom_smooth(method = "lm", color = "red", se = FALSE) +
@@ -426,22 +410,20 @@ ggplot(data_filtered, aes(x = Pm_ratio, y = Portfolio_Returns)) +
   theme_minimal()
 ```
 
-The regression results show that the intercept (0.009151) is statistically significant (p = 0.00194), suggesting an average portfolio return of approximately 0.92% when Pm_ratio is zero. However, the coefficient for Pm_ratio (-7.716e-07) is essentially zero and has an extremely high p-value (0.99996), indicating that Pm_ratio has no statistically significant effect on Portfolio_Returns. The R-squared value (8.185e-12) and adjusted R-squared (-0.003096) are both near zero, meaning that the model explains virtually none of the variance in Portfolio_Returns. The F-statistic is also effectively zero, with a p-value of 1, further confirming the lack of relationship. Overall, this model indicates that Pm_ratio does not provide any meaningful predictive information for portfolio returns, as also visualized by the flat regression line in the scatter plot.
-
 ### 7. Repeat (4) on data from 199706. Comment briefly
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 data_filtered <- data_filtered %>%
   mutate(abs_Rm = abs(Portfolio_Returns))
 head(data_filtered)
 ```
 
-```{r}
+```{r, results=FALSE, warning=FALSE, message=FALSE}
 model_3 <- lm(Portfolio_Returns ~ abs_Rm, data = data_filtered)
 summary(model_3)
 ```
 
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, results=FALSE, fig.show='hide'}
 ggplot(data_filtered, aes(x = abs_Rm, y = Portfolio_Returns)) +
   geom_point(color = "blue", alpha = 0.6) +  
   geom_smooth(method = "lm", color = "red", se = FALSE) +  
@@ -451,6 +433,3 @@ ggplot(data_filtered, aes(x = abs_Rm, y = Portfolio_Returns)) +
   theme_minimal()
 
 ```
-
-The regression of portfolio returns Rm(t) on the absolute value of returns absRm(t), using data from June 1997 onward, shows that neither the intercept nor the absolute returns are statistically significant. The intercept is estimated at 0.007406 with a t-value of 1.903 and a p-value of 0.0579, indicating weak statistical significance. The coefficient for absolute returns is 0.050668, with a t-value of 0.562 and a p-value of 0.5742, suggesting no significant relationship between absolute returns and current portfolio returns. The R-squared is 0.0009783, meaning that less than 0.1% of the variation in returns is explained by the model. The adjusted R-squared is negative, further confirming the poor fit of the model. Overall, the absolute returns do not provide meaningful explanatory power for current returns in this dataset.
-
